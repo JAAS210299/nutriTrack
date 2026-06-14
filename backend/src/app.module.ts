@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { UsersModule } from './users/users.module';
 import { FoodsModule } from './foods/foods.module';
+import { NutritionModule } from './nutrition/nutrition.module';
 import { User } from './users/entities/user.entity';
 import { UserProfile } from './users/entities/user-profile.entity';
 import { Food } from './foods/entities/food.entity';
@@ -32,6 +33,7 @@ import { Goal } from './goals/entities/goal.entity';
     MailModule,
     UsersModule,
     FoodsModule,
+    NutritionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
