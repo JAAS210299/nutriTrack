@@ -15,6 +15,7 @@ const app_service_1 = require("./app.service");
 const auth_module_1 = require("./auth/auth.module");
 const mail_module_1 = require("./mail/mail.module");
 const users_module_1 = require("./users/users.module");
+const foods_module_1 = require("./foods/foods.module");
 const user_entity_1 = require("./users/entities/user.entity");
 const user_profile_entity_1 = require("./users/entities/user-profile.entity");
 const food_entity_1 = require("./foods/entities/food.entity");
@@ -42,6 +43,7 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             mail_module_1.MailModule,
             users_module_1.UsersModule,
+            foods_module_1.FoodsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
