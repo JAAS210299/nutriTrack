@@ -1,0 +1,112 @@
+services:
+
+  # ─────────────────────────────────────────────
+  # Base de datos — MariaDB
+  # ─────────────────────────────────────────────
+  db:
+    image: mariadb:11
+    container_name: nutritrack-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${DB_NAME:-nutritrack}
+      MYSQL_USER: ${DB_USER:-nutriuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-nutripass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - nutritrack-net
+
+  # ─────────────────────────────────────────────
+  # Backend — NestJS
+  # ─────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: nutritrack-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      # Base de datos
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-nutritrack}
+      DB_USER: ${DB_USER:-nutriuser}
+      DB_PASSWORD: ${DB_PASSWORD:-nutripass}
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-supersecretdev}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-refreshsecretdev}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
+      # Email (Nodemailer — configura tu SMTP real en .env)
+      MAIL_HOST: ${MAIL_HOST:-mailhog}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_USER: ${MAIL_USER:-}
+      MAIL_PASS: ${MAIL_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-noreply@nutritrack.local}
+      # App
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4200}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules          # evita sobreescribir node_modules del contenedor
+    networks:
+      - nutritrack-net
+
+  # ─────────────────────────────────────────────
+  # Frontend — Angular
+  # ─────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: nutritrack-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: development
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - nutritrack-net
+
+  # ─────────────────────────────────────────────
+  # MailHog — bandeja de prueba para emails en dev
+  # http://localhost:8025 para ver los correos
+  # ─────────────────────────────────────────────
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: nutritrack-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # UI web
+    networks:
+      - nutritrack-net
+
+# ─────────────────────────────────────────────
+volumes:
+  db_data:
+
+networks:
+  nutritrack-net:
+    driver: bridge

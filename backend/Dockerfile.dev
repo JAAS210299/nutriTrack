@@ -1,0 +1,14 @@
+# ── Desarrollo: hot reload con ts-node / nest start --watch ──────────────────
+FROM node:20-alpine AS development
+
+WORKDIR /app
+
+# Instala dependencias primero (cacheo de capas)
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start:dev"]
