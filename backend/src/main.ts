@@ -1,22 +1,27 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Set global prefix
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.setGlobalPrefix('api');
+  app.enableCors({ origin: process.env.FRONTEND_URL ?? 'http://localhost:4200' });
 
-  // Enable CORS
-  app.enableCors({
-    origin: ['http://localhost:4200', 'http://localhost:3000', 'http://127.0.0.1:4200'],
-    credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type,Authorization',
-  });
+  const config = new DocumentBuilder()
+    .setTitle('NutriTrack API')
+    .setDescription('API REST para la aplicación de seguimiento nutricional NutriTrack')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
 
-  const PORT = process.env.PORT || 3000;
-  await app.listen(PORT);
-  console.log(`🚀 Application running on http://localhost:${PORT}`);
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/swagger', app, document);
+
+  await app.listen(process.env.PORT ?? 3000);
+  console.log('🚀 Application running on http://localhost:3000');
+  console.log('📚 Swagger disponible en http://localhost:3000/api/swagger');
 }
 bootstrap();
