@@ -3,13 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProfileService } from './services/profile.service';
 import type { UserProfile } from './services/profile.service';
+import { NavbarComponent } from './shared/navbar.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NavbarComponent],
   template: `
-    <div class="profile-container">
+    <app-navbar></app-navbar>
+    <main class="page" role="main">
       <div class="profile-card">
         <h2>Mi Perfil</h2>
         <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
@@ -57,13 +59,14 @@ import type { UserProfile } from './services/profile.service';
               </select>
             </div>
           </div>
+
           <div class="stats-container" *ngIf="stats">
             <div class="stat">
-              <span class="stat-label">BMR:</span>
+              <span class="stat-label">TMB (Metabolismo Basal):</span>
               <span class="stat-value">{{ stats.bmr | number:'1.0-0' }} kcal/día</span>
             </div>
             <div class="stat">
-              <span class="stat-label">TDEE:</span>
+              <span class="stat-label">TDEE (Gasto Total):</span>
               <span class="stat-value">{{ stats.tdee | number:'1.0-0' }} kcal/día</span>
             </div>
             <div class="stat highlight">
@@ -71,36 +74,39 @@ import type { UserProfile } from './services/profile.service';
               <span class="stat-value">{{ stats.targetCalories | number:'1.0-0' }} kcal/día</span>
             </div>
           </div>
+
           <div class="form-actions">
             <button type="submit" [disabled]="saving || !profileForm.valid">
               {{ saving ? 'Guardando...' : 'Guardar Perfil' }}
             </button>
           </div>
-          <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
-          <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+          <div *ngIf="successMessage" class="success-message" role="alert">{{ successMessage }}</div>
+          <div *ngIf="errorMessage" class="error-message" role="alert">{{ errorMessage }}</div>
         </form>
       </div>
-    </div>
+    </main>
   `,
   styles: [`
-    .profile-container { display:flex; justify-content:center; align-items:center; min-height:100vh; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); padding:20px; }
-    .profile-card { background:white; border-radius:12px; padding:40px; box-shadow:0 10px 40px rgba(0,0,0,0.1); max-width:600px; width:100%; }
-    h2 { margin-bottom:30px; color:#333; text-align:center; }
-    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
-    .form-group { display:flex; flex-direction:column; }
-    label { font-weight:600; margin-bottom:8px; color:#555; font-size:14px; }
-    input, select { padding:12px; border:1px solid #ddd; border-radius:6px; font-size:14px; font-family:inherit; }
-    input:focus, select:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 3px rgba(102,126,234,0.1); }
-    .stats-container { background:#f8f9fa; border-radius:8px; padding:20px; margin:25px 0; border-left:4px solid #667eea; }
-    .stat { display:flex; justify-content:space-between; padding:10px 0; color:#666; }
-    .stat.highlight { background:#fff; padding:12px; border-radius:6px; font-weight:600; color:#667eea; margin-top:10px; }
-    .form-actions { display:flex; gap:10px; margin-top:30px; }
-    button { flex:1; padding:12px; border:none; border-radius:6px; font-size:16px; font-weight:600; cursor:pointer; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; transition:all 0.3s; }
-    button:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 5px 20px rgba(102,126,234,0.4); }
+    .page { max-width:700px; margin:0 auto; padding:2rem 1rem; }
+    .profile-card { background:white; border-radius:12px; padding:2rem; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+    h2 { margin-bottom:1.5rem; color:#0F2D5E; text-align:center; font-size:1.5rem; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:1.25rem; }
+    .form-group { display:flex; flex-direction:column; gap:4px; }
+    label { font-weight:600; color:#374151; font-size:14px; }
+    input, select { padding:10px 12px; border:1.5px solid #E5E7EB; border-radius:8px; font-size:14px; font-family:inherit; transition:border-color 0.2s; }
+    input:focus, select:focus { outline:none; border-color:#1A56B0; box-shadow:0 0 0 3px rgba(26,86,176,0.1); }
+    .stats-container { background:#EFF6FF; border-radius:8px; padding:1.25rem; margin:1.5rem 0; border-left:4px solid #1A56B0; }
+    .stat { display:flex; justify-content:space-between; padding:8px 0; color:#374151; font-size:14px; }
+    .stat.highlight { background:white; padding:10px 12px; border-radius:6px; font-weight:700; color:#1A56B0; margin-top:8px; }
+    .stat-label { font-weight:500; }
+    .stat-value { font-family:'Courier New', monospace; }
+    .form-actions { margin-top:1.5rem; }
+    button { width:100%; padding:12px; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; background:#1A56B0; color:white; transition:all 0.2s; }
+    button:hover:not(:disabled) { background:#0F2D5E; transform:translateY(-1px); }
     button:disabled { opacity:0.6; cursor:not-allowed; }
-    .success-message { margin-top:15px; padding:12px; background:#d4edda; color:#155724; border-radius:6px; text-align:center; }
-    .error-message { margin-top:15px; padding:12px; background:#f8d7da; color:#721c24; border-radius:6px; text-align:center; }
-    @media (max-width:600px) { .profile-card { padding:20px; } .form-row { grid-template-columns:1fr; } }
+    .success-message { margin-top:1rem; padding:12px; background:#D1FAE5; color:#065F46; border-radius:8px; text-align:center; font-weight:500; }
+    .error-message { margin-top:1rem; padding:12px; background:#FEE2E2; color:#991B1B; border-radius:8px; text-align:center; }
+    @media (max-width:600px) { .form-row { grid-template-columns:1fr; } .page { padding:1rem; } }
   `]
 })
 export class ProfileComponent implements OnInit {
@@ -135,6 +141,7 @@ export class ProfileComponent implements OnInit {
       next: (profile: UserProfile) => {
         this.profileForm.patchValue(profile);
         this.calculateStats();
+        this.cdr.detectChanges();
       },
       error: () => console.log('No profile yet')
     });
