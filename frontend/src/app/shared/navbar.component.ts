@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
@@ -36,6 +36,11 @@ import { AuthService } from '../services/auth.service';
             <span aria-hidden="true">👤</span> Perfil
           </a>
         </li>
+        <li *ngIf="isAdmin">
+          <a routerLink="/admin" routerLinkActive="active" class="admin-link" aria-label="Panel de administración">
+            <span aria-hidden="true">⚙️</span> Admin
+          </a>
+        </li>
       </ul>
       <button class="logout-btn" (click)="logout()" aria-label="Cerrar sesión">
         <span aria-hidden="true">🚪</span> Salir
@@ -62,6 +67,8 @@ import { AuthService } from '../services/auth.service';
     .navbar-links a:hover, .navbar-links a.active {
       background:rgba(255,255,255,0.15); color:white;
     }
+    .admin-link { color:rgba(250,199,117,0.9) !important; }
+    .admin-link:hover, .admin-link.active { background:rgba(250,199,117,0.15) !important; color:#FAC775 !important; }
     .logout-btn {
       background:rgba(255,255,255,0.1); color:white; border:none;
       padding:6px 14px; border-radius:6px; cursor:pointer;
@@ -75,7 +82,21 @@ import { AuthService } from '../services/auth.service';
     }
   `]
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   private auth = inject(AuthService);
+  isAdmin = false;
+
+  ngOnInit(): void {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        this.isAdmin = payload.role === 'admin';
+      }
+    } catch {
+      this.isAdmin = false;
+    }
+  }
+
   logout() { this.auth.logout(); }
 }
