@@ -1,21 +1,20 @@
-# Sustituye tu-dominio.ddns.net por el dominio que hayas registrado en No-IP
-# Caddy obtiene y renueva el certificado Let's Encrypt automáticamente
-
-tu-dominio.ddns.net {
+jaas210299.ddns.net, http://desktop-0t3gpp2.tail75de8c.ts.net {
 
     # API REST → NestJS backend
     handle /api/* {
         reverse_proxy backend:3000
     }
 
-    # Swagger UI (solo en desarrollo; quita en producción real)
+    # Swagger UI (solo en desarrollo)
     handle /swagger* {
         reverse_proxy backend:3000
     }
 
-    # Todo lo demás → Angular frontend
+    # Todo lo demás → Angular frontend (Con truco para saltar el Host Check)
     handle {
-        reverse_proxy frontend:80
+        reverse_proxy frontend:4200 {
+            header_up Host localhost
+        }
     }
 
     # Cabeceras de seguridad básicas
