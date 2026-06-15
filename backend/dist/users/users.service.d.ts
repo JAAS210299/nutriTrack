@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { UserProfile } from './entities/user-profile.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 export declare class UsersService {
@@ -7,5 +7,16 @@ export declare class UsersService {
     private profileRepository;
     constructor(usersRepository: Repository<User>, profileRepository: Repository<UserProfile>);
     getProfile(userId: number): Promise<UserProfile>;
-    updateProfile(userId: number, updateProfileDto: UpdateProfileDto): Promise<UserProfile>;
+    updateProfile(userId: number, dto: UpdateProfileDto): Promise<UserProfile>;
+    findAllUsers(): Promise<User[]>;
+    updateUserRole(userId: number, role: UserRole): Promise<{
+        id: number;
+        email: string;
+        role: UserRole;
+    }>;
+    getStats(): Promise<{
+        totalUsers: number;
+        verifiedUsers: number;
+        adminUsers: number;
+    }>;
 }

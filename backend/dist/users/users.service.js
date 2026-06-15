@@ -35,20 +35,38 @@ let UsersService = class UsersService {
         }
         return profile;
     }
-    async updateProfile(userId, updateProfileDto) {
+    async updateProfile(userId, dto) {
         let profile = await this.profileRepository.findOne({
             where: { user: { id: userId } },
         });
         if (!profile) {
-            profile = this.profileRepository.create({
-                user: { id: userId },
-                ...updateProfileDto,
-            });
+            profile = this.profileRepository.create({ user: { id: userId }, ...dto });
         }
         else {
-            Object.assign(profile, updateProfileDto);
+            Object.assign(profile, dto);
         }
         return this.profileRepository.save(profile);
+    }
+    async findAllUsers() {
+        const users = await this.usersRepository.find({
+            select: ['id', 'email', 'role', 'isVerified', 'createdAt'],
+            order: { createdAt: 'DESC' },
+        });
+        return users;
+    }
+    async updateUserRole(userId, role) {
+        const user = await this.usersRepository.findOne({ where: { id: userId } });
+        if (!user)
+            throw new common_1.NotFoundException('Usuario no encontrado');
+        user.role = role;
+        await this.usersRepository.save(user);
+        return { id: user.id, email: user.email, role: user.role };
+    }
+    async getStats() {
+        const totalUsers = await this.usersRepository.count();
+        const verifiedUsers = await this.usersRepository.count({ where: { isVerified: true } });
+        const adminUsers = await this.usersRepository.count({ where: { role: user_entity_1.UserRole.ADMIN } });
+        return { totalUsers, verifiedUsers, adminUsers };
     }
 };
 exports.UsersService = UsersService;
