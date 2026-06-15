@@ -4,72 +4,75 @@ import { RouterLink } from '@angular/router';
 import { NutritionService } from '../services/nutrition.service';
 import type { DailyLog } from '../services/nutrition.service';
 import { NavbarComponent } from '../shared/navbar.component';
+import { SpinnerComponent } from '../shared/spinner.component';
 import { ProfileService } from '../services/profile.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavbarComponent],
+  imports: [CommonModule, RouterLink, NavbarComponent, SpinnerComponent],
   template: `
     <app-navbar></app-navbar>
     <main class="page" role="main">
       <div class="header">
         <h1>Dashboard</h1>
-        <p class="date" aria-live="polite">{{ today | date:'EEEE, d MMMM':'':'es' }}</p>
+        <p class="date" aria-live="polite">{{ today | date:'EEEE, d MMMM' }}</p>
       </div>
 
-      <section class="cards" aria-label="Resumen calórico del día">
-        <div class="card calories" role="article">
-          <div class="card-label">Calorías consumidas</div>
-          <div class="card-value" aria-label="{{ log?.totalCalories || 0 }} kilocalorías">
-            {{ log?.totalCalories || 0 | number:'1.0-0' }}
+      <app-spinner [show]="loading" message="Cargando tu resumen..."></app-spinner>
+
+      <ng-container *ngIf="!loading">
+        <section class="cards" aria-label="Resumen calórico del día">
+          <div class="card calories" role="article">
+            <div class="card-label">Calorías consumidas</div>
+            <div class="card-value">{{ log?.totalCalories || 0 | number:'1.0-0' }}</div>
+            <div class="card-sub">de {{ targetCalories | number:'1.0-0' }} kcal objetivo</div>
           </div>
-          <div class="card-sub">de {{ targetCalories | number:'1.0-0' }} kcal objetivo</div>
-        </div>
-        <div class="card protein" role="article">
-          <div class="card-label">Proteína</div>
-          <div class="card-value">{{ log?.totalProteinG || 0 | number:'1.0-0' }}g</div>
-          <div class="card-sub">de {{ targetProtein | number:'1.0-0' }}g mínimo</div>
-        </div>
-        <div class="card carbs" role="article">
-          <div class="card-label">Carbohidratos</div>
-          <div class="card-value">{{ log?.totalCarbsG || 0 | number:'1.0-0' }}g</div>
-        </div>
-        <div class="card fat" role="article">
-          <div class="card-label">Grasas</div>
-          <div class="card-value">{{ log?.totalFatG || 0 | number:'1.0-0' }}g</div>
-        </div>
-      </section>
+          <div class="card protein" role="article">
+            <div class="card-label">Proteína</div>
+            <div class="card-value">{{ log?.totalProteinG || 0 | number:'1.0-0' }}g</div>
+            <div class="card-sub">de {{ targetProtein | number:'1.0-0' }}g mínimo</div>
+          </div>
+          <div class="card carbs" role="article">
+            <div class="card-label">Carbohidratos</div>
+            <div class="card-value">{{ log?.totalCarbsG || 0 | number:'1.0-0' }}g</div>
+          </div>
+          <div class="card fat" role="article">
+            <div class="card-label">Grasas</div>
+            <div class="card-value">{{ log?.totalFatG || 0 | number:'1.0-0' }}g</div>
+          </div>
+        </section>
 
-      <section class="progress-section" aria-label="Progreso calórico">
-        <div class="progress-label">
-          <span>Progreso calórico</span>
-          <span>{{ caloriePercent }}%</span>
-        </div>
-        <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="caloriePercent" aria-valuemin="0" aria-valuemax="100">
-          <div class="progress-fill" [style.width.%]="caloriePercent" [class.over]="caloriePercent > 100"></div>
-        </div>
-      </section>
+        <section class="progress-section" aria-label="Progreso calórico">
+          <div class="progress-label">
+            <span>Progreso calórico</span>
+            <span>{{ caloriePercent }}%</span>
+          </div>
+          <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="caloriePercent" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-fill" [style.width.%]="caloriePercent" [class.over]="caloriePercent > 100"></div>
+          </div>
+        </section>
 
-      <section class="meals-section" aria-label="Comidas del día">
-        <div class="section-header">
-          <h2>Comidas de hoy</h2>
-          <a routerLink="/diary" class="btn-primary" aria-label="Ir al diario de comidas">+ Añadir comida</a>
-        </div>
-        <div *ngIf="!log?.entries?.length" class="empty" aria-live="polite">
-          No has registrado comidas hoy. <a routerLink="/diary">¡Empieza ahora!</a>
-        </div>
-        <div *ngFor="let meal of meals" class="meal-group" role="article">
-          <h3 class="meal-title">{{ mealLabels[meal.type] }}</h3>
-          <div class="meal-entries">
-            <div *ngFor="let entry of meal.entries" class="entry">
-              <span class="entry-name">{{ entry.food.name }}</span>
-              <span class="entry-qty">{{ entry.quantityG }}g</span>
-              <span class="entry-kcal">{{ entry.calories | number:'1.0-0' }} kcal</span>
+        <section class="meals-section" aria-label="Comidas del día">
+          <div class="section-header">
+            <h2>Comidas de hoy</h2>
+            <a routerLink="/diary" class="btn-primary">+ Añadir comida</a>
+          </div>
+          <div *ngIf="!log?.entries?.length" class="empty" aria-live="polite">
+            No has registrado comidas hoy. <a routerLink="/diary">¡Empieza ahora!</a>
+          </div>
+          <div *ngFor="let meal of meals" class="meal-group" role="article">
+            <h3 class="meal-title">{{ mealLabels[meal.type] }}</h3>
+            <div class="meal-entries">
+              <div *ngFor="let entry of meal.entries" class="entry">
+                <span class="entry-name">{{ entry.food.name }}</span>
+                <span class="entry-qty">{{ entry.quantityG }}g</span>
+                <span class="entry-kcal">{{ entry.calories | number:'1.0-0' }} kcal</span>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </ng-container>
     </main>
   `,
   styles: [`
@@ -79,10 +82,7 @@ import { ProfileService } from '../services/profile.service';
     .date { color:#6B7280; margin:4px 0 0; }
     .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:1.5rem; }
     .card { background:white; border-radius:12px; padding:1.25rem; box-shadow:0 1px 4px rgba(0,0,0,0.08); border-top:4px solid #ddd; }
-    .calories { border-color:#1A56B0; }
-    .protein { border-color:#059669; }
-    .carbs { border-color:#7C3AED; }
-    .fat { border-color:#D97706; }
+    .calories { border-color:#1A56B0; } .protein { border-color:#059669; } .carbs { border-color:#7C3AED; } .fat { border-color:#D97706; }
     .card-label { font-size:12px; color:#6B7280; font-weight:500; text-transform:uppercase; letter-spacing:.05em; }
     .card-value { font-size:2rem; font-weight:700; color:#1F2937; margin:4px 0; }
     .card-sub { font-size:12px; color:#9CA3AF; }
@@ -95,7 +95,6 @@ import { ProfileService } from '../services/profile.service';
     .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
     h2 { font-size:1.1rem; font-weight:600; color:#1F2937; margin:0; }
     .btn-primary { background:#1A56B0; color:white; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:500; }
-    .btn-primary:hover { background:#0F2D5E; }
     .empty { text-align:center; padding:2rem; color:#9CA3AF; }
     .empty a { color:#1A56B0; }
     .meal-group { margin-bottom:1rem; }
@@ -116,12 +115,10 @@ export class DashboardComponent implements OnInit {
   today = new Date();
   targetCalories = 2000;
   targetProtein = 150;
+  loading = true;
 
   mealLabels: Record<string, string> = {
-    breakfast: '🌅 Desayuno',
-    lunch: '☀️ Comida',
-    dinner: '🌙 Cena',
-    snack: '🍎 Snack',
+    breakfast: '🌅 Desayuno', lunch: '☀️ Comida', dinner: '🌙 Cena', snack: '🍎 Snack',
   };
 
   get caloriePercent(): number {
@@ -141,10 +138,6 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.nutritionService.getToday().subscribe({
-      next: log => { this.log = log; this.cdr.detectChanges(); },
-      error: () => {}
-    });
     this.profileService.getProfile().subscribe({
       next: p => {
         if (p.targetCalories) this.targetCalories = p.targetCalories;
@@ -152,6 +145,15 @@ export class DashboardComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {}
+    });
+
+    this.nutritionService.getToday().subscribe({
+      next: log => {
+        this.log = log;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 }
