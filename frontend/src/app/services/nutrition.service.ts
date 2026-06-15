@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -26,7 +27,7 @@ export interface DailyLog {
 @Injectable({ providedIn: 'root' })
 export class NutritionService {
   private http = inject(HttpClient);
-  private api = 'http://localhost:3000/api/nutrition';
+  private api = environment.apiUrl + '/nutrition';
 
   getToday(): Observable<DailyLog> {
     return this.http.get<DailyLog>(`${this.api}/today`);

@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -132,7 +133,7 @@ export class ResetPasswordComponent implements OnInit {
     this.loading = true;
     this.errorMessage = '';
 
-    this.http.post('http://localhost:3000/api/auth/reset-password', {
+    this.http.post(environment.apiUrl + '/auth/reset-password', {
       token: this.token,
       newPassword: this.password
     }).subscribe({

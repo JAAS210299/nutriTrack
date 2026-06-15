@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -21,7 +22,7 @@ export interface UserProfile {
   providedIn: 'root'
 })
 export class ProfileService {
-  private apiUrl = 'http://localhost:3000/api/users/profile';
+  private apiUrl = environment.apiUrl + '/users/profile';
 
   constructor(private http: HttpClient) {}
 

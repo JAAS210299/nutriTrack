@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -22,7 +23,7 @@ export interface FoodsResponse {
 @Injectable({ providedIn: 'root' })
 export class FoodsService {
   private http = inject(HttpClient);
-  private api = 'http://localhost:3000/api/foods';
+  private api = environment.apiUrl + '/foods';
 
   search(query: string = '', page: number = 1): Observable<FoodsResponse> {
     return this.http.get<FoodsResponse>(`${this.api}?query=${query}&page=${page}&limit=20`);

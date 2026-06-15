@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -88,7 +89,7 @@ export class ForgotPasswordComponent {
     this.loading = true;
     this.error = '';
 
-    this.http.post('http://localhost:3000/api/auth/forgot-password', { email: this.email }).subscribe({
+    this.http.post(environment.apiUrl + '/auth/forgot-password', { email: this.email }).subscribe({
       next: () => {
         this.sent = true;
         this.loading = false;
