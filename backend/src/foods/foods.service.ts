@@ -70,6 +70,52 @@ export class FoodsService {
     await this.foodRepository.remove(food);
   }
 
+  async searchOpenFoodFacts(query: string): Promise<any[]> {
+    try {
+      const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&json=true&page_size=10&fields=product_name,nutriments,brands`;
+      const response = await fetch(url);
+      const data: any = await response.json();
+
+      if (!data.products) return [];
+
+      return data.products
+        .filter((p: any) =>
+          p.product_name &&
+          p.nutriments &&
+          p.nutriments['energy-kcal_100g'] != null
+        )
+        .map((p: any) => ({
+          name: p.product_name + (p.brands ? ` (${p.brands.split(',')[0].trim()})` : ''),
+          caloriesPer100g: Math.round(p.nutriments['energy-kcal_100g'] || 0),
+          proteinG: Math.round((p.nutriments['proteins_100g'] || 0) * 10) / 10,
+          carbsG: Math.round((p.nutriments['carbohydrates_100g'] || 0) * 10) / 10,
+          fatG: Math.round((p.nutriments['fat_100g'] || 0) * 10) / 10,
+          source: 'openfoodfacts',
+        }))
+        .slice(0, 8);
+    } catch {
+      return [];
+    }
+  }
+
+  async importFromOpenFoodFacts(data: any, user: User): Promise<Food> {
+    // Check if already exists
+    const existing = await this.foodRepository.findOne({
+      where: { name: data.name }
+    });
+    if (existing) return existing;
+
+    const food = this.foodRepository.create({
+      name: data.name,
+      caloriesPer100g: data.caloriesPer100g,
+      proteinG: data.proteinG,
+      carbsG: data.carbsG,
+      fatG: data.fatG,
+      isCustom: false,
+    });
+    return this.foodRepository.save(food);
+  }
+
   async seedFoods(): Promise<void> {
     const count = await this.foodRepository.count();
     if (count > 0) return;

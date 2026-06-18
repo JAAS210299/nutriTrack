@@ -18,6 +18,16 @@ export class FoodsController {
     return this.foodsService.findAll(dto, req.user);
   }
 
+  @Get('search-external')
+  searchExternal(@Query('query') query: string) {
+    return this.foodsService.searchOpenFoodFacts(query);
+  }
+
+  @Post('import-external')
+  importExternal(@Body() data: any, @Request() req: any) {
+    return this.foodsService.importFromOpenFoodFacts(data, req.user);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.foodsService.findOne(+id);
